@@ -1,0 +1,10 @@
+[
+  {"label": "simulated-sloppy", "provider": "mock", "model": "sloppy", "enabled": true},
+  {"label": "simulated-careful", "provider": "mock", "model": "careful", "enabled": true},
+  {"label": "gemma3:4b via Ollama", "provider": "openai_compat", "model": "gemma3:4b",
+   "base_url": "http://localhost:11434/v1", "enabled": true},
+  {"label": "llama3.2:3b via Ollama", "provider": "openai_compat", "model": "llama3.2:3b",
+   "base_url": "http://localhost:11434/v1", "enabled": false},
+  {"label": "qwen2.5:7b via Ollama", "provider": "openai_compat", "model": "qwen2.5:7b",
+   "base_url": "http://localhost:11434/v1", "enabled": false}
+]

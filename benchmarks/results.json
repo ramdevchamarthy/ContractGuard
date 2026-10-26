@@ -1,0 +1,213 @@
+[
+  {
+    "label": "simulated-sloppy",
+    "structured": "none",
+    "summary": {
+      "total_trials": 25,
+      "completed": 25,
+      "request_errors": 0,
+      "strict_passed": 6,
+      "final_passed": 14,
+      "strict_pass_rate": 0.24,
+      "final_pass_rate": 0.56,
+      "strict_pass_ci95": [
+        0.11496157730326725,
+        0.43430059955238565
+      ],
+      "repair_recovery_rate": 0.42105263157894735,
+      "failure_counts": {
+        "invalid_json": 10,
+        "wrong_type": 4,
+        "extra_field": 1,
+        "missing_field": 2,
+        "invalid_enum": 2
+      },
+      "avg_latency_ms": 0,
+      "p95_latency_ms": 0
+    }
+  },
+  {
+    "label": "simulated-sloppy",
+    "structured": "json_object",
+    "summary": {
+      "total_trials": 25,
+      "completed": 25,
+      "request_errors": 0,
+      "strict_passed": 12,
+      "final_passed": 19,
+      "strict_pass_rate": 0.48,
+      "final_pass_rate": 0.76,
+      "strict_pass_ci95": [
+        0.30031003928960015,
+        0.6650178204685269
+      ],
+      "repair_recovery_rate": 0.5384615384615384,
+      "failure_counts": {
+        "invalid_json": 9,
+        "extra_field": 1,
+        "invalid_enum": 1,
+        "wrong_type": 1,
+        "missing_field": 1
+      },
+      "avg_latency_ms": 0,
+      "p95_latency_ms": 0
+    }
+  },
+  {
+    "label": "simulated-sloppy",
+    "structured": "json_schema",
+    "summary": {
+      "total_trials": 25,
+      "completed": 25,
+      "request_errors": 0,
+      "strict_passed": 25,
+      "final_passed": 25,
+      "strict_pass_rate": 1.0,
+      "final_pass_rate": 1.0,
+      "strict_pass_ci95": [
+        0.8668035060468213,
+        1.0
+      ],
+      "repair_recovery_rate": null,
+      "failure_counts": {},
+      "avg_latency_ms": 0,
+      "p95_latency_ms": 0
+    }
+  },
+  {
+    "label": "simulated-careful",
+    "structured": "none",
+    "summary": {
+      "total_trials": 25,
+      "completed": 25,
+      "request_errors": 0,
+      "strict_passed": 21,
+      "final_passed": 23,
+      "strict_pass_rate": 0.84,
+      "final_pass_rate": 0.92,
+      "strict_pass_ci95": [
+        0.6534598601976183,
+        0.9359665239142201
+      ],
+      "repair_recovery_rate": 0.5,
+      "failure_counts": {
+        "invalid_json": 2,
+        "extra_field": 1,
+        "missing_field": 1
+      },
+      "avg_latency_ms": 0,
+      "p95_latency_ms": 0
+    }
+  },
+  {
+    "label": "simulated-careful",
+    "structured": "json_object",
+    "summary": {
+      "total_trials": 25,
+      "completed": 25,
+      "request_errors": 0,
+      "strict_passed": 22,
+      "final_passed": 23,
+      "strict_pass_rate": 0.88,
+      "final_pass_rate": 0.92,
+      "strict_pass_ci95": [
+        0.7004380781662651,
+        0.9583325864293191
+      ],
+      "repair_recovery_rate": 0.3333333333333333,
+      "failure_counts": {
+        "invalid_json": 1,
+        "extra_field": 1,
+        "missing_field": 1
+      },
+      "avg_latency_ms": 0,
+      "p95_latency_ms": 0
+    }
+  },
+  {
+    "label": "simulated-careful",
+    "structured": "json_schema",
+    "summary": {
+      "total_trials": 25,
+      "completed": 25,
+      "request_errors": 0,
+      "strict_passed": 25,
+      "final_passed": 25,
+      "strict_pass_rate": 1.0,
+      "final_pass_rate": 1.0,
+      "strict_pass_ci95": [
+        0.8668035060468213,
+        1.0
+      ],
+      "repair_recovery_rate": null,
+      "failure_counts": {},
+      "avg_latency_ms": 0,
+      "p95_latency_ms": 0
+    }
+  },
+  {
+    "label": "gemma3:4b via Ollama",
+    "structured": "none",
+    "summary": {
+      "total_trials": 25,
+      "completed": 25,
+      "request_errors": 0,
+      "strict_passed": 0,
+      "final_passed": 25,
+      "strict_pass_rate": 0.0,
+      "final_pass_rate": 1.0,
+      "strict_pass_ci95": [
+        0.0,
+        0.13319649395317873
+      ],
+      "repair_recovery_rate": 1.0,
+      "failure_counts": {
+        "invalid_json": 25
+      },
+      "avg_latency_ms": 4566,
+      "p95_latency_ms": 4828
+    }
+  },
+  {
+    "label": "gemma3:4b via Ollama",
+    "structured": "json_object",
+    "summary": {
+      "total_trials": 25,
+      "completed": 25,
+      "request_errors": 0,
+      "strict_passed": 25,
+      "final_passed": 25,
+      "strict_pass_rate": 1.0,
+      "final_pass_rate": 1.0,
+      "strict_pass_ci95": [
+        0.8668035060468213,
+        1.0
+      ],
+      "repair_recovery_rate": null,
+      "failure_counts": {},
+      "avg_latency_ms": 3762,
+      "p95_latency_ms": 3903
+    }
+  },
+  {
+    "label": "gemma3:4b via Ollama",
+    "structured": "json_schema",
+    "summary": {
+      "total_trials": 25,
+      "completed": 25,
+      "request_errors": 0,
+      "strict_passed": 25,
+      "final_passed": 25,
+      "strict_pass_rate": 1.0,
+      "final_pass_rate": 1.0,
+      "strict_pass_ci95": [
+        0.8668035060468213,
+        1.0
+      ],
+      "repair_recovery_rate": null,
+      "failure_counts": {},
+      "avg_latency_ms": 3759,
+      "p95_latency_ms": 3875
+    }
+  }
+]

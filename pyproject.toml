@@ -1,0 +1,24 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "contract-tester"
+version = "0.1.0"
+description = "Test whether an LLM endpoint keeps its JSON Schema contract, and diagnose how it breaks."
+readme = "README.md"
+requires-python = ">=3.10"
+license = { text = "MIT" }
+dependencies = ["fastapi>=0.110", "uvicorn>=0.29", "jsonschema>=4.21", "requests>=2.31", "pydantic>=2.6"]
+
+[project.scripts]
+contract-tester = "contract_tester.cli:main"
+
+[tool.setuptools.packages.find]
+include = ["contract_tester*"]
+
+[tool.setuptools.package-data]
+contract_tester = ["static/*", "examples/*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

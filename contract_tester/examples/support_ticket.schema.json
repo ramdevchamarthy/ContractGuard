@@ -1,0 +1,15 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Support ticket triage",
+  "type": "object",
+  "properties": {
+    "category": {"type": "string", "enum": ["billing", "bug", "feature_request", "account"]},
+    "priority": {"type": "string", "enum": ["low", "medium", "high", "urgent"]},
+    "summary": {"type": "string", "maxLength": 200},
+    "needs_human": {"type": "boolean"},
+    "confidence": {"type": "number", "minimum": 0, "maximum": 1},
+    "tags": {"type": "array", "items": {"type": "string"}, "maxItems": 5}
+  },
+  "required": ["category", "priority", "summary", "needs_human"],
+  "additionalProperties": false
+}

@@ -1,0 +1,281 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Contract Tester: does your model keep its JSON promises?</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@600;800&family=Public+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --paper:#EDF1F5; --ink:#101B2B; --muted:#53627A; --rule:#C6D1DD; --field:#FFFFFF;
+  --pass:#1E8A5E; --fixed:#8FD0B2;
+  --head:"Bricolage Grotesque","Segoe UI",system-ui,sans-serif;
+  --body:"Public Sans","Segoe UI",system-ui,sans-serif;
+  --mono:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+}
+*{box-sizing:border-box}
+html{scroll-padding-top:1rem}
+body{margin:0;background:var(--paper);color:var(--ink);font:16px/1.55 var(--body)}
+a{color:inherit}
+.wrap{max-width:1180px;margin:0 auto;padding:2.2rem 1.25rem 4rem}
+h1{font:800 clamp(2rem,5vw,3.4rem)/1.04 var(--head);letter-spacing:-.02em;margin:0 0 .6rem;max-width:16ch}
+.lede{color:var(--muted);max-width:60ch;margin:0 0 2rem}
+.grid{display:grid;grid-template-columns:minmax(300px,380px) 1fr;gap:2.5rem;align-items:start}
+@media (max-width:860px){.grid{grid-template-columns:1fr}}
+form{display:grid;gap:1rem}
+label{display:grid;gap:.3rem;font-weight:600;font-size:.92rem}
+label small{font-weight:400;color:var(--muted)}
+textarea,input,select{font:inherit;color:inherit;background:var(--field);border:1px solid var(--rule);border-radius:6px;padding:.55rem .65rem;width:100%}
+textarea{font-family:var(--mono);font-size:.82rem;line-height:1.45;resize:vertical}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:.8rem}
+button{font:600 1rem var(--body);cursor:pointer;border-radius:6px}
+.primary{background:var(--ink);color:#fff;border:0;padding:.75rem 1rem}
+.primary[disabled]{opacity:.6;cursor:progress}
+.link{background:none;border:0;color:var(--muted);text-decoration:underline;padding:0;justify-self:start;font-weight:500}
+:focus-visible{outline:3px solid #2B6CFF;outline-offset:2px}
+#error{color:#9B1C1C;font-weight:600;min-height:1.4em}
+.hidden{display:none!important}
+.empty{border-left:4px solid var(--rule);padding:.4rem 0 .4rem 1rem;color:var(--muted);max-width:52ch}
+.verdict{font:600 clamp(1.3rem,2.6vw,1.9rem)/1.3 var(--head);margin:0 0 .4rem;max-width:34ch}
+.sub{color:var(--muted);margin:0 0 1.4rem}
+.sim{display:inline-block;background:#FFF3C4;color:#6B4E00;padding:.1rem .5rem;border-radius:4px;font-size:.85rem;font-weight:600;margin-bottom:.8rem}
+h2{font:600 1.15rem var(--head);margin:1.8rem 0 .6rem}
+.strip{display:flex;flex-wrap:wrap;gap:3px}
+.cell{width:18px;height:18px;border-radius:3px;border:0;padding:0}
+.cell[aria-pressed=true]{outline:3px solid var(--ink);outline-offset:1px}
+.legend{display:flex;flex-wrap:wrap;gap:.4rem 1rem;margin-top:.7rem;font-size:.85rem;color:var(--muted)}
+.legend i{display:inline-block;width:11px;height:11px;border-radius:2px;margin-right:.35rem;vertical-align:-1px}
+.bars{display:grid;gap:.45rem}
+.bar{display:grid;grid-template-columns:11rem 1fr 3rem;gap:.7rem;align-items:center;font-size:.92rem}
+.bar .track{background:#DCE4EC;border-radius:3px;height:12px}
+.bar .fill{height:12px;border-radius:3px}
+.bar b{text-align:right;font-variant-numeric:tabular-nums}
+@media (max-width:520px){.bar{grid-template-columns:7.5rem 1fr 2.4rem}}
+table{border-collapse:collapse;width:100%;font-size:.9rem}
+th,td{text-align:left;padding:.45rem .5rem;border-bottom:1px solid var(--rule);vertical-align:top}
+th{font-weight:600;color:var(--muted)}
+.inspector{margin-top:1rem;border-top:2px solid var(--ink);padding-top:.8rem}
+.inspector pre{background:var(--field);border:1px solid var(--rule);border-radius:6px;padding:.7rem;overflow:auto;max-height:260px;font:.8rem/1.45 var(--mono);white-space:pre-wrap;word-break:break-word}
+.viol{margin:.2rem 0;font-size:.92rem}
+.tag{display:inline-block;color:#fff;border-radius:4px;padding:0 .4rem;font-size:.8rem;font-weight:600;margin-right:.4rem}
+.scroll{overflow-x:auto}
+@media (prefers-reduced-motion:no-preference){.verdict{animation:in .35s ease-out}@keyframes in{from{opacity:0;transform:translateY(6px)}}}
+</style>
+</head>
+<body>
+<main class="wrap">
+  <h1>Does your model keep its JSON promises?</h1>
+  <p class="lede">Give it a JSON Schema and some prompts. Contract Tester asks the model many times, checks every answer against the schema, and shows exactly how and how often it breaks.</p>
+
+  <div class="grid">
+    <form id="form" autocomplete="off">
+      <label>JSON Schema
+        <textarea id="schema" rows="12" spellcheck="false" required></textarea>
+      </label>
+      <label>Prompts <small>one per line</small>
+        <textarea id="prompts" rows="5" spellcheck="false" required></textarea>
+      </label>
+      <div class="row">
+        <label>Model source
+          <select id="provider">
+            <option value="mock">Simulated model (no setup)</option>
+            <option value="openai_compat">Real model (OpenAI-compatible)</option>
+          </select>
+        </label>
+        <label><span id="modelLabel">Simulated profile</span>
+          <input id="model" list="mockModels" value="sloppy">
+          <datalist id="mockModels"><option value="sloppy"><option value="careful"></datalist>
+        </label>
+      </div>
+      <div id="realFields" class="hidden">
+        <label>Endpoint <small>for example Ollama</small>
+          <input id="baseUrl" value="http://localhost:11434/v1">
+        </label>
+        <label>API key <small>optional, never stored</small>
+          <input id="apiKey" type="password">
+        </label>
+      </div>
+      <div class="row">
+        <label>Runs per prompt
+          <input id="runs" type="number" min="1" max="50" value="10">
+        </label>
+        <label>Temperature
+          <input id="temp" type="number" min="0" max="2" step="0.1" value="0.7">
+        </label>
+      </div>
+      <div class="row">
+        <label>Output mode
+          <select id="structured">
+            <option value="none">Prompt only</option>
+            <option value="json_object">JSON mode</option>
+            <option value="json_schema">Schema-constrained</option>
+          </select>
+        </label>
+        <label>Repair
+          <select id="repair">
+            <option value="none">Off</option>
+            <option value="local" selected>Fix syntax only</option>
+            <option value="model">Syntax, then one model retry</option>
+          </select>
+        </label>
+      </div>
+      <button class="primary" id="go" type="submit">Run trials</button>
+      <div id="error" role="alert"></div>
+      <button class="link" id="reset" type="button">Reset to the example</button>
+    </form>
+
+    <section aria-live="polite" id="results">
+      <p class="empty" id="empty">Press <b>Run trials</b> to test the example schema with the simulated model. Then switch to a real model such as Ollama and compare.</p>
+      <div id="out" class="hidden"></div>
+    </section>
+  </div>
+</main>
+
+<script>
+const $ = (s) => document.querySelector(s);
+const COLORS = {
+  invalid_json:"#B83227", empty_output:"#5B6770", missing_field:"#D9822B", wrong_type:"#7A4FB0",
+  invalid_enum:"#2B7BB9", extra_field:"#8C8A1E", constraint_violation:"#C2478A", request_error:"#3D4756"
+};
+const LABELS = {
+  invalid_json:"Invalid JSON", empty_output:"Empty output", missing_field:"Missing field", wrong_type:"Wrong type",
+  invalid_enum:"Invalid enum value", extra_field:"Extra field", constraint_violation:"Constraint violated", request_error:"Request failed"
+};
+let report = null, selected = null;
+
+async function loadExample() {
+  const data = await (await fetch("/api/examples")).json();
+  $("#schema").value = JSON.stringify(data.schema, null, 2);
+  $("#prompts").value = data.prompts.join("\n");
+}
+
+function syncProvider() {
+  const real = $("#provider").value === "openai_compat";
+  $("#realFields").classList.toggle("hidden", !real);
+  $("#modelLabel").textContent = real ? "Model name" : "Simulated profile";
+  $("#model").value = real ? "gemma3:4b" : "sloppy";
+}
+$("#provider").addEventListener("change", syncProvider);
+$("#reset").addEventListener("click", loadExample);
+
+const pct = (v) => v == null ? "n/a" : (v * 100).toFixed(0) + "%";
+const el = (tag, props = {}, ...kids) => {
+  const n = Object.assign(document.createElement(tag), props);
+  kids.forEach((k) => n.append(k));
+  return n;
+};
+const statusOf = (t) => t.strict_ok ? "pass" : t.final_ok ? "fixed" : (t.violations[0]?.type || "invalid_json");
+const colorOf = (s) => s === "pass" ? "var(--pass)" : s === "fixed" ? "var(--fixed)" : COLORS[s];
+
+$("#form").addEventListener("submit", async (e) => {
+  e.preventDefault();
+  $("#error").textContent = "";
+  let schema;
+  try { schema = JSON.parse($("#schema").value); }
+  catch (err) { $("#error").textContent = "The schema is not valid JSON: " + err.message; return; }
+  const body = {
+    json_schema: schema,
+    prompts: $("#prompts").value.split("\n").map((s) => s.trim()).filter(Boolean),
+    provider: $("#provider").value, model: $("#model").value.trim(),
+    base_url: $("#baseUrl").value.trim() || null, api_key: $("#apiKey").value || null,
+    runs: Number($("#runs").value), temperature: Number($("#temp").value),
+    structured: $("#structured").value, repair_mode: $("#repair").value
+  };
+  const btn = $("#go"); btn.disabled = true; btn.textContent = "Running trials...";
+  try {
+    const res = await fetch("/api/run", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
+    const data = await res.json();
+    if (!res.ok) throw new Error(typeof data.detail === "string" ? data.detail : "Check your inputs and try again.");
+    report = data; selected = null; render();
+  } catch (err) { $("#error").textContent = err.message; }
+  finally { btn.disabled = false; btn.textContent = "Run trials"; }
+});
+
+function render() {
+  const s = report.summary, out = $("#out");
+  out.replaceChildren(); out.classList.remove("hidden"); $("#empty").classList.add("hidden");
+
+  if (report.model.startsWith("mock-")) out.append(el("div", { className: "sim", textContent: "Simulated model: results are illustrative, not a real benchmark" }));
+  const ci = s.strict_pass_ci95;
+  let verdict = `${s.strict_passed} of ${s.completed} answers kept the contract as they were.`;
+  if (report.settings.repair_mode !== "none" && s.final_passed > s.strict_passed)
+    verdict += ` ${s.final_passed - s.strict_passed} more passed after repair.`;
+  out.append(el("p", { className: "verdict", textContent: verdict }));
+  out.append(el("p", { className: "sub", textContent:
+    `Strict pass rate ${pct(s.strict_pass_rate)}` + (ci ? ` (95% range ${pct(ci[0])} to ${pct(ci[1])})` : "") +
+    ` for ${report.model}. Average response ${s.avg_latency_ms ?? "n/a"} ms.` +
+    (s.request_errors ? ` ${s.request_errors} requests failed and are not counted.` : "") }));
+
+  out.append(el("h2", { textContent: "Every trial" }));
+  const strip = el("div", { className: "strip" });
+  report.trials.forEach((t, i) => {
+    const st = statusOf(t);
+    const label = `Prompt ${t.prompt_index + 1}, run ${t.run + 1}: ` + (st === "pass" ? "passed" : st === "fixed" ? "passed after repair" : LABELS[st]);
+    const b = el("button", { type: "button", className: "cell", title: label });
+    b.style.background = colorOf(st); b.setAttribute("aria-label", label); b.setAttribute("aria-pressed", String(selected === i));
+    b.addEventListener("click", () => { selected = i; render(); $("#inspector")?.scrollIntoView({ block: "nearest" }); });
+    strip.append(b);
+  });
+  out.append(strip);
+  const legend = el("div", { className: "legend" });
+  const used = new Set(report.trials.map(statusOf));
+  [["pass", "Passed"], ["fixed", "Passed after repair"], ...Object.keys(LABELS).map((k) => [k, LABELS[k]])]
+    .filter(([k]) => used.has(k)).forEach(([k, name]) => {
+      const i = el("i"); i.style.background = colorOf(k);
+      legend.append(el("span", {}, i, name));
+    });
+  out.append(legend);
+
+  const counts = Object.entries(s.failure_counts).sort((a, b) => b[1] - a[1]);
+  if (counts.length) {
+    out.append(el("h2", { textContent: "How it fails" }));
+    const bars = el("div", { className: "bars" });
+    const max = Math.max(...counts.map((c) => c[1]));
+    counts.forEach(([k, n]) => {
+      const fill = el("div", { className: "fill" }); fill.style.width = (n / max * 100) + "%"; fill.style.background = COLORS[k];
+      bars.append(el("div", { className: "bar" }, el("span", { textContent: LABELS[k] || k }), el("div", { className: "track" }, fill), el("b", { textContent: String(n) })));
+    });
+    out.append(bars);
+    out.append(el("p", { className: "sub", textContent: "Numbers count trials affected. One answer can break the contract in more than one way." }));
+  }
+
+  const cons = report.consistency.filter((c) => c.score != null);
+  if (cons.length) {
+    out.append(el("h2", { textContent: "Is the shape stable between runs?" }));
+    const rows = cons.map((c) => el("tr", {},
+      el("td", { textContent: c.prompt.length > 48 ? c.prompt.slice(0, 48) + "..." : c.prompt }),
+      el("td", { textContent: pct(c.score) }),
+      el("td", { textContent: c.unstable_paths.length ? c.unstable_paths.slice(0, 4).map((u) => u.path).join(", ") + (c.unstable_paths.length > 4 ? ", ..." : "") : "Stable" })));
+    out.append(el("div", { className: "scroll" }, el("table", {},
+      el("thead", {}, el("tr", {}, el("th", { textContent: "Prompt" }), el("th", { textContent: "Same shape" }), el("th", { textContent: "Fields that changed" }))),
+      el("tbody", {}, ...rows))));
+  }
+
+  if (selected != null) out.append(inspector(report.trials[selected]));
+  else out.append(el("p", { className: "sub", textContent: "Select any square above to read the raw answer and why it failed." }));
+}
+
+function inspector(t) {
+  const st = statusOf(t);
+  const box = el("div", { className: "inspector", id: "inspector" });
+  box.append(el("h2", { textContent: `Prompt ${t.prompt_index + 1}, run ${t.run + 1}: ${st === "pass" ? "passed" : st === "fixed" ? "passed after repair" : "failed"}` }));
+  t.violations.forEach((v) => {
+    const tag = el("span", { className: "tag", textContent: LABELS[v.type] || v.type }); tag.style.background = COLORS[v.type] || "#333";
+    box.append(el("div", { className: "viol" }, tag, el("code", { textContent: v.path }), " " + v.message));
+  });
+  if (t.repair) {
+    box.append(el("h2", { textContent: t.repair.ok ? "Repair worked" : "Repair did not work" }));
+    box.append(el("p", { className: "sub", textContent: t.repair.steps.join("; ") || "No steps applied." }));
+    if (t.repair.text) box.append(el("pre", { textContent: t.repair.text }));
+  }
+  box.append(el("h2", { textContent: "Raw answer from the model" }));
+  box.append(el("pre", { textContent: t.raw || "(empty)" }));
+  return box;
+}
+
+syncProvider(); loadExample();
+</script>
+</body>
+</html>
